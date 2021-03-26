@@ -1,4 +1,5 @@
 # Subtity.js
+![Logo](src/assets/subtity-.png)
 A library used to parse and render subtitles for your videos
 
 ## Author 
