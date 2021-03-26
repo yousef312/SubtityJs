@@ -1,8 +1,8 @@
 
 /**
- * Subtity.js 1.0.0
+ * Subtity.js 1.5.0
  *
- * Copyright 2018, yousef neji
+ * Copyright 2021, yousef neji
  * Licensed under the MIT license.
  */
 /**
@@ -35,10 +35,11 @@
          * 
          * The interface support parsing this files formats:
          *  - `webvtt`
-         *  - `itt` 
-         *  - `ssa` 
-         *  - `srt` 
-         *  - `sbv` 
+         *  - `itt`
+         *  - `ssa`
+         *  - `srt`
+         *  - `sbv`
+         *  - `usf`
          * @author Yousef Neji
          */
         function Subtity(){
@@ -130,6 +131,12 @@
             this.container = null;
 
             /**
+             * Holds some meta data if any about the subtitle currently under use.
+             * @type {object}
+             */
+            this.meta = {};
+
+            /**
              * The displaying mode, holds the mode id used in rendering/displaying the subtitles.
              * 
              *  - `1` : for HTMLElement displaying mode
@@ -186,6 +193,8 @@
                 this.subtitles = [];
                 this.ranges = [];
                 this.activated = false;
+                this.subtitlesCounts = 0;
+                this.meta = {};
                 this.title = '';
             },
             /**
@@ -213,6 +222,7 @@
                 this.text = this.subs[i].text;
                 this.subtitlesCounts = this.subs[i].count;
                 this.activated = true;
+                this.meta = this.subs[i].meta;
 
                 this.calcFontHeight();
             },
@@ -229,11 +239,11 @@
                     movie : movie,
                     title : title,
                     ranges : [],
+                    meta : {},
                     subtitles : [],
                     text : text,
                     count : 0
                 },
-                
                 // that's all it is
                 isNam = false,
                 subtitle = [];
@@ -273,6 +283,7 @@
                 sub = {
                     movie : movie,
                     title : title,
+                    meta : {},
                     ranges : [],
                     subtitles : []
                 };
@@ -322,6 +333,7 @@
                 sub = {
                     movie : movie,
                     title : title,
+                    meta : {},
                     ranges : [],
                     subtitles : []
                 };
@@ -356,7 +368,7 @@
             },
             /**
              * Parse the given .ssa file format and subtract all subtitles and their durations.
-             * @method Subtity#parseSBV
+             * @method Subtity#parseSSA
              * @param {string} text the file content
              * @param {string} title the subtitle special name to identify and use later
              * @param {string} movie the movie to display subtitles to
@@ -366,6 +378,7 @@
                 sub = {
                     movie : movie,
                     title : title,
+                    meta : {},
                     ranges : [],
                     subtitles : [],
                     count : null
@@ -425,6 +438,13 @@
                                 sub.subtitles.push([string]);
                             }
                         }
+                        else if( section === 'script info')
+                        {
+                            if( line[0] === ';' ) continue; // stands for comments lines
+                            pieces = line.split(':'); 
+                            lineSubject = spaceoff(pieces[0]);
+                            sub.meta[lineSubject] = pieces[1];
+                        }
                     }
                 }
 
@@ -433,7 +453,7 @@
             },
             /**
              * Parse the given .itt file format and subtract all subtitles and their durations.
-             * @method Subtity#parseSBV
+             * @method Subtity#parseITT
              * @param {string} text the file content
              * @param {string} title the subtitle special name to identify and use later
              * @param {string} movie the movie to display subtitles to
@@ -443,6 +463,7 @@
                 sub = {
                     movie : movie,
                     title : title,
+                    meta : {},
                     ranges : [],
                     subtitles : [],
                     count : null
@@ -492,6 +513,136 @@
 
                 sub.count = sub.subtitles.length;
                 this.subs.push(sub);
+            },
+            /**
+             * Parse the given .usf file format and subtract all subtitles and their durations.
+             * @method Subtity#parseUSF
+             * @param {string} text the file content
+             * @param {string} title the subtitle special name to identify and use later
+             * @param {string} movie the movie to display subtitles to
+             */
+            parseUSF : function( text , title , movie ){
+                var meta = text.split('<metadata>')[1].split('</metadata>')[0],
+                data = text.split('<subtitles>')[1].split('</subtitles>')[0].split('<subtitle '),
+                sub = {
+                    movie : movie,
+                    title : title,
+                    ranges : [],
+                    meta : {},
+                    subtitles : [],
+                    count : null
+                }, fline = '', sline = '', ino = false, splitter = [null,null];
+
+                
+                // getting the meta data
+                if( meta.indexOf('<title>') !== -1)
+                {
+                    sub.meta.title = meta.split('<title>')[1].split('</title>')[0];
+                }
+                if( meta.indexOf('<date>') !== -1)
+                {
+                    sub.meta.date = meta.split('<date>')[1].split('</date>')[0];
+                }
+                if( meta.indexOf('<author>') !== -1)
+                {
+                    var authorData = meta.split('<author>')[1].split('</author>')[0];
+                    if( authorData.indexOf('<name>') !== -1)
+                    {
+                        sub.meta.authorName = authorData.split('<name>')[1].split('</name>')[0];
+                    }
+                    if( authorData.indexOf('<url>') !== -1)
+                    {
+                        sub.meta.authorUrl = authorData.split('<url>')[1].split('</url>')[0];
+                    }
+                    if( authorData.indexOf('<email>') !== -1)
+                    {
+                        sub.meta.authorEmail = authorData.split('<email>')[1].split('</email>')[0];
+                    }
+                }
+                if( meta.indexOf('<language') !== -1)
+                {
+                    sub.meta.language = "";
+                    t = meta.split('<language ')[1].split('</language>')[0];
+                    sub.meta.language = t.substr(t.indexOf('>') + 1 , t.length);
+                }
+
+                for (let i = 0; i < data.length; i++) {
+                    if(data[i][0] !== 's') continue; // empty recognised lines are ignored
+
+                    const line = data[i];
+                    const timeRang = data[i].split('>')[0].split('"');
+                    var begin = this.convertToTime(timeRang[1]);
+                    var end = this.convertToTime(timeRang[3]);
+
+
+                    // choosing the right splitter
+                    if( line.indexOf('<text ') !== -1)
+                    {
+                        splitter[0] = '<text ';
+                        splitter[1] = '</text>';
+                    }
+                    else if( line.indexOf('<karaoke ') !== -1)
+                    {
+                        splitter[0] = '<karaoke ';
+                        splitter[1] = '</karaoke>';
+                    }
+                    
+                    // doing the subtraction
+                    sline = line.split(splitter[0])[1].split(splitter[1])[0];
+                    fline = '';
+                    ino = false;
+                    for (let k = sline.indexOf('>'); k < sline.length; k++) {
+                        const element = sline[k];
+
+                        if( sline[k] === '<' && sline[k+1] !== ' ' )
+                        {
+                            ino = false;
+                        }
+
+                        if( ino )
+                        {
+                            fline += element;
+                        }
+
+
+                        if(element === '>')
+                        {
+                            ino = true;
+                        }
+                        
+                    }
+
+                    // make sure there is no other subtitle that collides with this one.
+                    var alr = sub.ranges.findIndex(a => begin >= a[0] && begin <= a[1]);
+                    if(alr !== -1)
+                    {
+                        sub.subtitles[alr] = sub.subtitles[alr].concat(fline.split('\n'));
+                    }
+                    else
+                    {
+                        sub.subtitles.push(fline.split('\n'));
+                        sub.ranges.push([begin,end]);
+                    }
+                }
+
+                sub.count = sub.subtitles.length;
+                this.subs.push(sub);
+            },
+            /**
+             * Convert a given time in seconds to a proper format to be used in a subtitle file in this way `hh:mm:ss.xx` seperated
+             * by the given seperator.
+             * @method Subtity#convertToText
+             * @param {number} time 
+             * @returns {string}
+             */
+            convertToText : function( time , seperator = ':' ){
+                var hours = time / 3600;
+                time = time - (hours * 3600); 
+                var minutes = time / 60;
+                time = time - (minutes * 60);
+                var seconds = time;
+
+                return hours + seperator + minutes + seperator + seconds;
             },
             /**
              * Convert the string in time notation `hh:mm:ss` or `hh:mm:ss.xx` to real number represent time 
@@ -886,6 +1037,10 @@
                 {
                     this.parseSSA(text,title,movie);
                 }
+                else if( ext === '.usf' || ext === 'usf' )
+                {
+                    this.parseUSF(text,title,movie);
+                }
             },
             /**
              * Check whether a title is under use or not, then warn to console if it's is
@@ -901,7 +1056,28 @@
                     return false;
                 }
                 return true;
-            }
+            },
+            /**
+             * Export the current system content of subtitles and ranges to an .srt file formats text
+             * @method Subtity#exportToSRT
+             * @returns {string}
+             */
+            exportToSRT : function(){
+                var text = '';
+                for (let i = 0; i < this.subtitle.length; i++) {
+                    const sub = this.subtitle[i];
+                    const rang = this.ranges[i];
+                    var sect = i + '\n';
+                    sect += this.convertToText(rang[0]) + ' --> ' + this.convertToText(rang[1]) + '\n';
+
+                    for (let k = 0; k < sub.length; k++) {
+                        sect += sub + '\n';
+                    }
+                    text += sect + '\n';
+                }
+
+                return text;
+            },
         }
 
         return Subtity;
