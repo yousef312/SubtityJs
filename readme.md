@@ -29,6 +29,7 @@ Beside rendering subtitles the library is able to parse this subtitle files form
  - `SBV` or `.sbv` file
  - `WEBVTT` or `.webvtt` file
  - `ITT` or `.itt` file
+ - `USF` or `.usf` file
 
 To start using the library you start by initializing it.
 ```JavaScript
