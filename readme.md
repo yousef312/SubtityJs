@@ -6,7 +6,7 @@ A library used to parse and render subtitles for your videos
 Yousef Neji
 
 ## Version
-1.0.0
+2.0.0
 
 
 ## Tutorial
@@ -30,6 +30,15 @@ Beside rendering subtitles the library is able to parse this subtitle files form
  - `WEBVTT` or `.webvtt` file
  - `ITT` or `.itt` file
  - `USF` or `.usf` file
+ - `LRC` or `.lrc` file
+ - `SUBTI` or `.subti` file
+
+ And exporting to this files formats
+  - `SUBTI` or `.subti` 
+  - `SRT` or `.srt` 
+  - `LRC` or `.lrc` 
+  - `WEBVTT` or `.webvtt` 
+  - `SSA` or `.ssa` 
 
 To start using the library you start by initializing it.
 ```JavaScript
@@ -87,16 +96,23 @@ fs.readFile('F:\\subtitles\\subtitle.srt','utf8',function( err , text){
         // - ext or extension is the file extension which can be easily subtracted from the path using
         // the node.js path library `path.extname`()
         // - movie is optional identification for the movie this subtitle is belongs to. optional
-        subtity.add('Joker Movie Subtitle',text,'srt','joker movie');
+        subtity.add('joker-movie-subtitle',text,'srt','joker movie');
 
         // later on you can remove the subtitle from the stored subtitle list
-        subtity.remove('Joker Movie Subtitle');
+        subtity.remove('joker-movie-subtitle');
     }
 })
 ```
+now all need to be done is to use this subtitles
+```JavaScript
+var button = document.getElementById('useSubtitle');
+button.onclick = function(){
+    subtity.use('joker-movie-subtitle');
+}
+```
 for more control over the subtitles the library provides more couple of functions
 ```JavaScript
-// to change the subtitle style is using the set method
+// to change the subtitle style use set method
 subtity.set(style,value);
 
 // to load default styles
@@ -112,6 +128,17 @@ subtity.setOffset(offset);
 subtity.toggleActivation(state);
 
 ```
+
+Also you can export to a couple of file formats
+```JavaScript
+var SRT_TEXT = subtity.export('srt');
+var SUBTI_TEXT = subtity.export('subti');
+var LRC_TEXT = subtity.export('lrc');
+var WEBVTT_TEXT = subtity.export('webvtt');
+var SSA_TEXT = subtity.export('ssa');
+
+```
+the method will grab the system content of subtitles and export it to a text file of type srt of subti, this allows to create your own subtitle file from within the system itself.
 
 ## Copyrights
 Reserved under MIT license
