@@ -1,6 +1,6 @@
 
 /**
- * Subtity.js 2.0.0
+ * Subtity.js 2.5.0
  *
  * Copyright 2021, yousef neji
  * Licensed under the MIT license.
@@ -269,7 +269,7 @@
                 for (let i = 0; i < sections.length; i++) {
                     const line = sections[i];
 
-                    if(line.length == 1)
+                    if((line.length == 1 || line.length === 0 )&& subtitle.length !== 0)
                     {
                         isNam = false;
                         sub.subtitles.push(subtitle);
@@ -319,7 +319,7 @@
                         continue;
                     }
 
-                    if(openSection && line.length !== 1)
+                    if(openSection && (line.length !== 1 || line.length !== 0))
                     {
                         subtitle.push(line);
                     }
@@ -330,7 +330,7 @@
                         sub.ranges.push(rang);
                         openSection = true;
                     }
-                    else if(line.length === 1 && openSection === true)
+                    else if((line.length === 1 || line.length === 0)&& openSection === true)
                     {
                         openSection = false;
                         sub.subtitles.push(subtitle);
@@ -361,11 +361,11 @@
                     type : 'sbv'
                 };
 
-                if(data[0].length === 1) off = true;
+                if(data[0].length === 1 || data[0].length === 0) off = true;
                 for (let i = 0; i < data.length; i++) {
                     var line = data[i];
                     
-                    if(two === true && line.length !== 1)
+                    if(two === true && line.length !== 1 && line.length !== 0)
                     {
                         sub.subtitles[k].push(line);
                     }
@@ -378,7 +378,7 @@
                         k++;
                         sub.subtitles[k] = [];
                     }
-                    if(line.length === 1)
+                    if(line.length === 1 || line.length === 0)
                     {
                         off = true;
                         two = false;
@@ -932,7 +932,6 @@
                         }
                     }
                 }
-
             },
             /**
              * Set up the parser to render the text to a 2D CanvasRendering context, passing the HTMLCanvasElement
