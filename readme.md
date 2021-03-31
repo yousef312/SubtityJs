@@ -6,7 +6,7 @@ A library used to parse and render subtitles for your videos
 Yousef Neji
 
 ## Version
-2.0.0
+2.5.0
 
 
 ## Tutorial
