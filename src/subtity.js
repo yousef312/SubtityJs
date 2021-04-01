@@ -1,6 +1,6 @@
 
 /**
- * Subtity.js 2.5.0
+ * Subtity.js 3.0.0
  *
  * Copyright 2021, yousef neji
  * Licensed under the MIT license.
