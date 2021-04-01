@@ -372,7 +372,6 @@
                                     rangout[1] = this.convertToTime(rang[k][1].replaceAll('"',''));
                                 }
                             })
-                            delete rang;
                         }
 
                         sub.ranges.push(rangout);
