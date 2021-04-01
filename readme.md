@@ -129,6 +129,10 @@ subtity.setOffset(offset);
 // to change the subtitle rendering speed
 subtity.setSpeed(speedMultiplier);
 
+// to change the language of the subtitle if provided within the subtitle text file
+subtity.switchToLang(lang);
+// the `lang` must a two-chiffre representation of the language for example to say english you pass `en` so on with france `fr` so on...
+
 // toggle between activating and disactivating the subtitle
 // if state is passed with a boolean `true` or `false` it will be set
 // other wise the activation will be toggled.
