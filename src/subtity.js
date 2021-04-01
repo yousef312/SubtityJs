@@ -42,6 +42,10 @@
          *  - `sbv`
          *  - `usf`
          *  - `lrc`
+         *  - `xml`
+         *  - `rt`
+         *  - `dfxp`
+         *  - `ttml`
          *  - `subti` official
          * 
          * and exporting this file
@@ -112,7 +116,9 @@
             this.style = {
                 family : 'Arial',
                 size : 19,
+                style : 'normal',
                 lineSpacing : 5,
+                variant : 'normal',
                 color : 'rgb(255,255,255)',
                 align : 'center',
                 direction : 'ltr',
@@ -179,6 +185,12 @@
              * @type {String}
              */
             this.currentFileType = null;
+
+            /**
+             * This value controls the speed of the subtitles you can change through `Subtity.setSpeed`.
+             * @type {number}
+             */
+            this.speedFactor = 1;
         }
         Subtity.prototype = {
             /**
@@ -187,10 +199,13 @@
              */
             reset : function(){
                 this.current = 0;
+                this.speedFactor = 0;
                 this.offset = 0;
                 this.style = {
                     family : 'Arial',
                     size : 19,
+                    style : 'normal',
+                    variant : 'normal',
                     lineSpacing : 10,
                     color : 'rgb(255,255,255)',
                     align : 'center',
@@ -287,6 +302,120 @@
                     }
                 }
                 
+                sub.count = sub.subtitles.length;
+                this.subs.push(sub);
+            },
+            /**
+             * Parse the given xml based file formats text content like `.dfxp` and `.ttml`, must be called once after starting the video!
+             * 
+             * @method Subtity#parseXMLBased
+             * @param {string} text the file content
+             * @param {string} title the subtitle special name to identify and use later
+             * @param {string} movie the movie to display subtitles to
+             */
+            parseXMLBased : function(text,title,movie){
+                var sections = text.split('<body>')[1].split('</body>')[0].split('</div>'),
+                sub = {
+                    movie : movie,
+                    title : title,
+                    meta : {
+                        langs : {}
+                    },
+                    ranges : [],
+                    subtitles : [],
+                    text : text,
+                    type : 'dfxp'
+                },lang = null,
+                rang = null,
+                flang = null,
+                rangout = null;
+
+                for (let i = 0; i < sections.length; i++) {
+                    const element = sections[i].split('<div ')[1];
+                    if(element === undefined) continue;
+
+                    var keyword = element.substr(0,element.indexOf('>')).split(' ');
+
+                    keyword.forEach((a,i)=> {
+                        keyword[i] = keyword[i].split('=');
+                        if(keyword[i][0] === 'xml:lang')
+                        {
+                            lang = keyword[i][1].replaceAll('"','');
+                            if(flang === null) flang = lang;
+                            sub.meta.langs[lang] = [];
+                        }
+                    });
+                    
+                    var lines = element.split('</p>');
+                    if(lang === null)
+                    {
+                        lang = 'en';
+                        if(flang === null) flang = lang;
+                    }
+                    for (let j = 0; j < lines.length; j++) {
+                        var line = lines[j].split('<p ')[1];
+                        if( line === undefined) continue;
+                        line = line.substr(line.indexOf('>')+1,line.length);
+
+                        if( i === 0 )
+                        {
+                            rang = line.substr(0,line.indexOf('>')).split(' ');
+                            rangout = [];
+                            rang.forEach((a,k)=>{
+                                rang[k] = rang[k].split('=');
+                                if(rang[k][0] === 'begin')
+                                {
+                                    rangout[0] = this.convertToTime(rang[k][1].replaceAll('"',''));
+                                }
+                                else if( rang[k][0] === 'end' )
+                                {
+                                    rangout[1] = this.convertToTime(rang[k][1].replaceAll('"',''));
+                                }
+                            })
+                            delete rang;
+                        }
+
+                        sub.ranges.push(rangout);
+                        sub.meta.langs[lang].push(line.split('<br />'));
+                    }
+                }
+
+                sub.subtitles = sub.meta.langs[flang];
+                sub.count = sub.subtitles.length;
+                this.subs.push(sub);
+            },
+            /**
+             * Parse the given xml file text content, must be called once after starting the video!
+             * @method Subtity#parseXML
+             * @param {string} text the file content
+             * @param {string} title the subtitle special name to identify and use later
+             * @param {string} movie the movie to display subtitles to
+             */
+            parseXML : function( text , title , movie )
+            {
+                var sections = text.split('<video>')[1].split('<video/>')[0].split('</title>'),
+                sub = {
+                    movie : movie,
+                    title : title,
+                    meta : {},
+                    ranges : [],
+                    subtitles : [],
+                    text : text,
+                    type : 'xml'
+                };
+                sections.pop();
+
+                for (let i = 0; i < sections.length; i++) {
+                    const section = sections[i].split('<title>')[1];
+                    rang0 = this.convertToTime(section.split('<start>')[1].split('</start>')[0].replace(';','.'));
+                    rang1 = this.convertToTime(section.split('<end>')[1].split('</end>')[0].replace(';','.'));
+                    rang = [rang0,rang1];
+                    sub.ranges.push(rang);
+                    subtitle = section.split('<text>')[1].split('</text>')[0].split('<br/>');
+                    sub.subtitles.push(subtitle);
+                }
+
+
                 sub.count = sub.subtitles.length;
                 this.subs.push(sub);
             },
@@ -477,6 +606,61 @@
                 this.subs.push(sub);
             },
             /**
+             * Parse the given .rt file format and subtract all subtitles and their durations.
+             * @method Subtity#parseRT
+             * @param {string} text the file content
+             * @param {string} title the subtitle special name to identify and use later
+             * @param {string} movie the movie to display subtitles to
+             */
+            parseRT : function( text , title , movie ){
+                var data = text.split('<br/>'),section = [],
+                sub = {
+                    movie : movie,
+                    title : title,
+                    meta : {},
+                    ranges : [],
+                    subtitles : [],
+                    count : null,
+                    text : text,
+                    type : 'rt'
+                };
+
+                // taking rid of the useless part
+                data.shift();
+                // fixing some part
+                data[data.length - 1] = data[data.length - 1].split('</font>')[0];
+
+                for (let i = 0; i < data.length; i++) {
+                    section = data[i].split('<clear/>');
+                    rang = section[0].split('<time ')[1].split('/>')[0].split(' ');
+                    rangout = [];
+                    for (let j = 0; j < rang.length; j++) {
+                        const element = rang[j].split('=');
+                        prop = element[0].toLowerCase();
+                        config = element[1].replaceAll('"','');
+                        if(prop === 'begin')
+                        {
+                            rangout[0] = parseFloat(config);
+                        }
+                        else if(prop === 'end')
+                        {
+                            rangout[1] = parseFloat(config);
+                        }
+                    }
+                    
+                    // fixing the older rang if missing end property
+                    if( sub.ranges[sub.ranges.length - 1] !== undefined && sub.ranges[sub.ranges.length - 1].length === 1)
+                    {
+                        sub.ranges[sub.ranges.length - 1].push(rangout[0]);
+                    }
+                    sub.ranges.push(rangout);
+                    sub.subtitles.push(section[1].split('<br>'));
+                }
+                
+                sub.count = sub.subtitles.length;
+                this.subs.push(sub);
+            },
+            /**
              * Parse the given .itt file format and subtract all subtitles and their durations.
              * @method Subtity#parseITT
              * @param {string} text the file content
@@ -520,7 +704,7 @@
                         const string = sect[j];
                         // why <br instead of the whole string <br> 
                         // simply because we take rid of the > when we split the string using it
-                        betterText = string.replace('<br','\n');
+                        betterText = string.replaceAll('<br','\n');
 
                         for (let k = 0; k < betterText.length; k++) {
                             if(betterText[k] + betterText[k+1] + betterText[k+2] + betterText[k+3] + betterText[k+4] === '<span' || betterText[k] + betterText[k+1] === '</')
@@ -860,7 +1044,7 @@
 
                 if(this.ranges.length === 0 || this.subtitles.length === 0 || this.activated === false) return;
 
-                current = this.video.currentTime;
+                current = this.video.currentTime * this.speedFactor;
                 mov = this.video.src;
 
                 for (let i = 0; i < this.ranges.length; i++) {
@@ -880,6 +1064,8 @@
                         {
                             // for rendering mode we should get the options
                             family = this.style.family || 'Arial';
+                            style = this.style.style || 'normal';
+                            variant = this.style.variant || 'normal';
                             base = this.style.base || 90;
                             left = this.style.left || 50;
                             size = this.style.size || 25;
@@ -907,7 +1093,7 @@
                             this.renderer.fillStyle = color;
                             this.renderer.textAlign = align;
                             this.renderer.direction = direction;
-                            this.renderer.font = `${weight} ${size}px ${family}`;
+                            this.renderer.font = `${style} ${variant} ${weight} ${size}px ${family}`;
                             this.renderer.shadowColor = shadowColor;
                             this.renderer.shadowBlur = shadowBlur;
                             this.renderer.shadowOffsetX = shadowX;
@@ -966,6 +1152,14 @@
                 this.offset = typeof offset === 'number' && !isNaN(offset) ? offset : this.offset;
             },
             /**
+             * Change the subtitle rendering speed
+             * @method Subtity#setSpeed
+             * @param {number} speed 
+             */
+            setSpeed : function( speed ){
+                this.speedFactor = typeof speed === 'number' && !isNaN(speed) ? speed : this.speedFactor;
+            },
+            /**
              * Customize the subtitles style when displaying, this is only applied when rendering
              * to a 2D context, not when using normal DOM element.
              * @method Subtity#set
@@ -984,6 +1178,12 @@
                         break;
                     case 'weight':
                         this.style.weight = value;
+                        break;
+                    case 'style':
+                        this.style.style = value;
+                        break;
+                    case 'variant':
+                        this.style.variant = value;
                         break;
                     case 'size':
                         this.style.size = parseFloat(value);
@@ -1104,9 +1304,10 @@
                     shadowY : 0,
                     base : 90,
                     left : 50,
-                    weight : ''
+                    weight : '',
+                    style : 'normal',
+                    variant : 'normal'
                 }
-                this.offset = 0;
             },
             /**
              * Toggle the activation of the subtitle
@@ -1194,6 +1395,18 @@
                 else if( ext === '.subti' || ext === 'subti' )
                 {
                     this.parseSUBTI(text,title,movie);
+                }
+                else if( ext === '.rt' || ext === 'rt' )
+                {
+                    this.parseRT(text,title,movie);
+                }
+                else if( ext === '.dfxp' || ext === 'dfxp' || ext === 'ttml' || ext === '.ttml')
+                {
+                    this.parseXMLBased(text,title,movie);
+                }
+                else if( ext === '.xml' || ext === 'xml' )
+                {   
+                    this.parseXML(text,title,movie);
                 }
             },
             /**
@@ -1390,9 +1603,23 @@
                 }
 
                 return text
+            },
+            /**
+             * Change the current subtitle language if subtitle file provided with multi languages, this is only supported with certain
+             * file formats like `.dfxp`.
+             * @method Subtity#switchToLang
+             * @param {string} lang the first two letter of the language for example for `english` you pass `en` and so on... 
+             */
+            switchToLang : function( lang ){
+                if( this.meta.langs !== undefined )
+                {
+                    if( this.meta.langs.hasOwnProperty(lang) )
+                    {
+                        this.subtitles = this.meta.langs[lang];
+                    }
+                }
             }
         }
 
         return Subtity;
 }));
-
