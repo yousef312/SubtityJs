@@ -6,7 +6,7 @@ A library used to parse and render subtitles for your videos
 Yousef Neji
 
 ## Version
-2.5.0
+3.0.0
 
 
 ## Tutorial
@@ -31,6 +31,10 @@ Beside rendering subtitles the library is able to parse this subtitle files form
  - `ITT` or `.itt` file
  - `USF` or `.usf` file
  - `LRC` or `.lrc` file
+ - `XML` or `.xml` file
+ - `RT` or `.rt` file
+ - `dfxp` or `.dfxp` file
+ - `TTML` or `.ttml` file
  - `SUBTI` or `.subti` file
 
  And exporting to this files formats
@@ -121,6 +125,9 @@ subtity.loadDefaultStyle();
 // the offset shift the subtitle display duration forward or backward
 // to change it is using
 subtity.setOffset(offset);
+
+// to change the subtitle rendering speed
+subtity.setSpeed(speedMultiplier);
 
 // toggle between activating and disactivating the subtitle
 // if state is passed with a boolean `true` or `false` it will be set
