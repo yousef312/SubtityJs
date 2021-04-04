@@ -1,6 +1,6 @@
 
 /**
- * Subtity.js 3.0.0
+ * Subtity.js 3.1.0
  *
  * Copyright 2021, yousef neji
  * Licensed under the MIT license.
@@ -199,7 +199,7 @@
              */
             reset : function(){
                 this.current = 0;
-                this.speedFactor = 0;
+                this.speedFactor = 1;
                 this.offset = 0;
                 this.style = {
                     family : 'Arial',
