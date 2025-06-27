@@ -1,0 +1,38 @@
+{
+  "name": "subtity",
+  "version": "1.1.0",
+  "description": "a library used to parse render and create subtitles file for your app",
+  "main": "./src/subtity.js",
+  "module": "dist/subtity.esm.js",
+  "browser": "dist/subtity.umd.min.js",
+  "exports": {
+    "import": "./dist/subtity.esm.js",
+    "require": "./dist/subtity.cjs.js"
+  },
+  "scripts": {
+    "build": "rollup -c"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yousef312/SubtityJs.git"
+  },
+  "keywords": [
+    "subtitles",
+    "parse",
+    "xml",
+    "srt",
+    "render"
+  ],
+  "author": "Yousef Neji",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yousef312/SubtityJs/issues"
+  },
+  "homepage": "https://github.com/yousef312/SubtityJs#readme",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.5",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "rollup": "^4.43.0"
+  }
+}
