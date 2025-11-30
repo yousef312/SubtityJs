@@ -5,10 +5,6 @@ A library used to parse and render subtitles for your videos
 ## Author 
 Yousef Neji
 
-## Version
-3.0.0
-
-
 ## Tutorial
 Some concept to discuss!!
 

@@ -17,7 +17,7 @@
  * the special title of the subtitle.
  */
 
-var nums = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+let nums = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
 /**
  * A powerfull tool to add subtitles to your movie, it works in two modes, either rendering
@@ -46,64 +46,64 @@ var nums = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
  *  - `ssa`
  * @author Yousef Neji
  */
-function Subtity() {
+class Subtity {
 
     /**
      * Holds the different defined subtitles
      * @type {Array}
      */
-    this.subs = [];
+    subs = [];
 
     /**
      * The currently used subtitle title used it identify it
      * @type {string}
      */
-    this.title = '';
+    title = '';
 
     /**
      * The text content of the subtitle file currently under use.
      * @readonly
      * @type {string}
      */
-    this.text = '';
+    text = '';
 
     /**
      * Holds the different subtitles strings for file currently under use. 
      * @type {array}
      */
-    this.subtitles = [];
+    subtitles = [];
 
     /**
      * Holds the different subtitle ranges of time for file currently under use.
      * @type {array}
      */
-    this.ranges = [];
+    ranges = [];
 
     /**
      * Holds the current displayed subtitle index in the subtitles list.
      * @type {number}
      * @readonly
      */
-    this.current = 0;
+    current = 0;
 
     /**
      * Holds the subtitles counts for file currently under use.
      * @type {number}
      */
-    this.subtitlesCounts = null;
+    subtitlesCounts = null;
 
     /**
      * Optional offseting of subtitles ranges, used to synchronous the subtitle with the speech
      * when it's asynchronous.
      * @type {number}
      */
-    this.offset = 0;
+    offset = 0;
 
     /**
      * Holds the different rendering style options, to change those options use `set` method and
      * don't change them manually as there is extra calculation need to be done.
      */
-    this.style = {
+    style = {
         family: 'Arial',
         size: 19,
         style: 'normal',
@@ -128,19 +128,19 @@ function Subtity() {
      * Used to render the subtitle if 2D renderer was chosen, will remain null if html div container was chosen!
      * @type {CanvasRenderingContext2D}
      */
-    this.renderer = null;
+    renderer = null;
 
     /**
      * Used to holds the HTMLElement used to contain the subtitles, will remain null if 2D was chosen!
      * @type {HTMLElement}
      */
-    this.container = null;
+    container = null;
 
     /**
      * Holds some meta data if any about the subtitle currently under use.
      * @type {object}
      */
-    this.meta = {};
+    meta = {};
 
     /**
      * The displaying mode, holds the mode id used in rendering/displaying the subtitles.
@@ -150,44 +150,46 @@ function Subtity() {
      * @readonly
      * @type {number}
      */
-    this.mode = null;
+    mode = null;
 
     /**
      * The HTMLVideoElement used to show the video with subtitles.
      * @type {HTMLVideoElement}
      */
-    this.video = null;
+    video = null;
 
     /**
      * The Parser owned context, used to perform some critical calculations
      * @type {CanvasRenderingContext2D}
      */
-    this.ctx = document.createElement('canvas').getContext('2d');
+    ctx = document.createElement('canvas').getContext('2d');
 
     /**
      * Flag determine whether the subtitle displaying currently activated or not
      * @type {boolean}
      */
-    this.activated = false;
+    activated = false;
 
     /**
      * Holds the current used subtitle file format or extension
      * @type {String}
      */
-    this.currentFileType = null;
+    currentFileType = null;
 
     /**
      * This value controls the speed of the subtitles you can change through `Subtity.setSpeed`.
      * @type {number}
      */
-    this.speedFactor = 1;
-}
-Subtity.prototype = {
+    speedFactor = 1;
+
+    constructor() {
+
+    }
+
     /**
      * Reset the system by freeing the currently used subtitle list and ranges..
-     * @method Subtity#reset
      */
-    reset: function () {
+    reset() {
         this.current = 0;
         this.speedFactor = 1;
         this.offset = 0;
@@ -218,18 +220,17 @@ Subtity.prototype = {
         this.meta = {};
         this.title = '';
         this.currentFileType = null;
-    },
+    }
     /**
      * Use certain subtitle file and activate the rendering
-     * @method Subtity#use
      * @param {string} title 
      */
-    use: function (title) {
-        var i = this.subs.findIndex(a => a.title === title);
+    use(title) {
+        let i = this.subs.findIndex(a => a.title === title);
         if (i === -1) return;
 
         if (this.title !== '') {
-            var j = this.subs.findIndex(a => a.title === this.title);
+            let j = this.subs.findIndex(a => a.title === this.title);
             this.subs[j].used = false;
         }
 
@@ -247,16 +248,15 @@ Subtity.prototype = {
         this.currentFileType = this.subs[i].type;
 
         this.calcFontHeight();
-    },
+    }
     /**
      * Parse the given srt file text content, must be called once after starting the video!
-     * @method Subtity#parseSRT
      * @param {string} text the file content
      * @param {string} title the subtitle special name to identify and use later
      * @param {string} movie the movie to display subtitles to
      */
-    parseSRT: function (text, title, movie) {
-        var sections = text.split('\n'),
+    parseSRT(text, title, movie) {
+        let sections = text.split('\n'),
             sub = {
                 movie: movie,
                 title: title,
@@ -290,17 +290,16 @@ Subtity.prototype = {
 
         sub.count = sub.subtitles.length;
         this.subs.push(sub);
-    },
+    }
     /**
      * Parse the given xml based file formats text content like `.dfxp` and `.ttml`, must be called once after starting the video!
      * 
-     * @method Subtity#parseXMLBased
      * @param {string} text the file content
      * @param {string} title the subtitle special name to identify and use later
      * @param {string} movie the movie to display subtitles to
      */
-    parseXMLBased: function (text, title, movie) {
-        var sections = text.split('<body>')[1].split('</body>')[0].split('</div>'),
+    parseXMLBased(text, title, movie) {
+        let sections = text.split('<body>')[1].split('</body>')[0].split('</div>'),
             sub = {
                 movie: movie,
                 title: title,
@@ -320,7 +319,7 @@ Subtity.prototype = {
             const element = sections[i].split('<div ')[1];
             if (element === undefined) continue;
 
-            var keyword = element.substr(0, element.indexOf('>')).split(' ');
+            let keyword = element.substring(0, element.indexOf('>')).split(' ');
 
             keyword.forEach((a, i) => {
                 keyword[i] = keyword[i].split('=');
@@ -331,18 +330,18 @@ Subtity.prototype = {
                 }
             });
 
-            var lines = element.split('</p>');
+            let lines = element.split('</p>');
             if (lang === null) {
                 lang = 'en';
                 if (flang === null) flang = lang;
             }
             for (let j = 0; j < lines.length; j++) {
-                var line = lines[j].split('<p ')[1];
+                let line = lines[j].split('<p ')[1];
                 if (line === undefined) continue;
-                line = line.substr(line.indexOf('>') + 1, line.length);
+                line = line.substring(line.indexOf('>') + 1, line.length);
 
                 if (i === 0) {
-                    rang = line.substr(0, line.indexOf('>')).split(' ');
+                    rang = line.substring(0, line.indexOf('>')).split(' ');
                     rangout = [];
                     rang.forEach((a, k) => {
                         rang[k] = rang[k].split('=');
@@ -363,16 +362,15 @@ Subtity.prototype = {
         sub.subtitles = sub.meta.langs[flang];
         sub.count = sub.subtitles.length;
         this.subs.push(sub);
-    },
+    }
     /**
      * Parse the given xml file text content, must be called once after starting the video!
-     * @method Subtity#parseXML
      * @param {string} text the file content
      * @param {string} title the subtitle special name to identify and use later
      * @param {string} movie the movie to display subtitles to
      */
-    parseXML: function (text, title, movie) {
-        var sections = text.split('<video>')[1].split('<video/>')[0].split('</title>'),
+    parseXML(text, title, movie) {
+        let sections = text.split('<video>')[1].split('<video/>')[0].split('</title>'),
             sub = {
                 movie: movie,
                 title: title,
@@ -394,19 +392,17 @@ Subtity.prototype = {
             sub.subtitles.push(subtitle);
         }
 
-
         sub.count = sub.subtitles.length;
         this.subs.push(sub);
-    },
+    }
     /**
      * Parse the given webvtt file text content, must be called once after starting the video!
-     * @method Subtity#parseWEBVTT
      * @param {string} text the file content
      * @param {string} title the subtitle special name to identify and use later
      * @param {string} movie the movie to display subtitles to
      */
-    parseWEBVTT: function (text, title, movie) {
-        var sections = text.split('\n'), openSection = false,
+    parseWEBVTT(text, title, movie) {
+        let sections = text.split('\n'), openSection = false,
             sub = {
                 movie: movie,
                 title: title,
@@ -417,21 +413,18 @@ Subtity.prototype = {
                 type: 'webvtt'
             };
         // that's all it is
-        var subtitle = [];
+        let subtitle = [];
         for (let i = 0; i < sections.length; i++) {
             const line = sections[i];
 
             // ignoring comments
-            if (line.indexOf('NOTE ') !== -1 || line[0].indexOf('NOTE\n') !== -1) {
-                continue;
-            }
+            if (line.indexOf('NOTE ') !== -1 || line[0].indexOf('NOTE\n') !== -1) continue;
 
-            if (openSection && (line.length !== 1 || line.length !== 0)) {
+            if (openSection && (line.length !== 1 || line.length !== 0))
                 subtitle.push(line);
-            }
 
             if (line.indexOf('-->') !== -1) {
-                var rang = this.getSeconds(line);
+                let rang = this.getSeconds(line);
                 sub.ranges.push(rang);
                 openSection = true;
             }
@@ -445,16 +438,15 @@ Subtity.prototype = {
 
         sub.count = sub.subtitles.length;
         this.subs.push(sub);
-    },
+    }
     /**
      * Parse the given .sbv file format and subtract all subtitles and their durations.
-     * @method Subtity#parseSBV
      * @param {string} text the file content
      * @param {string} title the subtitle special name to identify and use later
      * @param {string} movie the movie to display subtitles to
      */
-    parseSBV: function (text, title, movie) {
-        var data = text.split('\n'), off = false, two = false, k = -1,
+    parseSBV(text, title, movie) {
+        let data = text.split('\n'), off = false, two = false, k = -1,
             sub = {
                 movie: movie,
                 title: title,
@@ -467,11 +459,10 @@ Subtity.prototype = {
 
         if (data[0].length === 1 || data[0].length === 0) off = true;
         for (let i = 0; i < data.length; i++) {
-            var line = data[i];
+            let line = data[i];
 
-            if (two === true && line.length !== 1 && line.length !== 0) {
+            if (two === true && line.length !== 1 && line.length !== 0)
                 sub.subtitles[k].push(line);
-            }
 
             if (off === true) {
                 sub.ranges.push(this.getSeconds(line));
@@ -484,22 +475,19 @@ Subtity.prototype = {
                 off = true;
                 two = false;
             }
-
         }
 
         sub.count = sub.subtitles.length;
         this.subs.push(sub);
-    },
+    }
     /**
      * Parse the given .ssa file format and subtract all subtitles and their durations.
-     * @method Subtity#parseSSA
      * @param {string} text the file content
      * @param {string} title the subtitle special name to identify and use later
      * @param {string} movie the movie to display subtitles to
      */
-    parseSSA: function (text, title, movie) {
-        var data = text.split('\n'), syntax = null, section = null,
-            sub = {
+    parseSSA(text, title, movie) {
+        let data = text.split('\n'), syntax = null, sub = {
                 movie: movie,
                 title: title,
                 meta: {},
@@ -512,16 +500,15 @@ Subtity.prototype = {
 
         for (let i = 0; i < data.length; i++) {
             const line = data[i];
+            let section;
 
-
-            if (line[0] === '[') {
+            if (line[0] === '[')
                 // that means we enter a section 
                 // and now we will check what does the section contains
-                var section = line.substr(1, line.indexOf(']') - 1).toLowerCase();
-            }
+                section = line.substring(1, line.indexOf(']') - 1).toLowerCase();
             else {
                 if (section === 'events') {
-                    var pieces = line.split(':');
+                    let pieces = line.split(':');
                     if (pieces.length > 2) {
                         for (let j = 2; j < pieces.length; j++) {
                             pieces[1] += ':' + pieces[j];
@@ -529,8 +516,8 @@ Subtity.prototype = {
 
                         pieces.splice(2, pieces.length);
                     }
-                    var lineSubject = pieces[0].toLowerCase();
-                    var lineBody = pieces[1];
+                    let lineSubject = pieces[0].toLowerCase();
+                    let lineBody = pieces[1];
 
                     // line may be a format explain or a dialog
                     if (lineSubject === 'format') {
@@ -541,11 +528,11 @@ Subtity.prototype = {
                         // there is the speaker and some other stuffs and that's ordered according 
                         // to the format line we found above
 
-                        var lineBodySections = lineBody.split(',');
+                        let lineBodySections = lineBody.split(',');
 
                         // getting the subtitle
                         k = syntax.findIndex(a => a.trim() === 'text');
-                        var string = lineBodySections[k];
+                        let string = lineBodySections[k];
 
                         // getting the time rang
                         i0 = syntax.findIndex(a => a.toLowerCase().trim() === 'start');
@@ -569,16 +556,15 @@ Subtity.prototype = {
 
         sub.count = sub.subtitles.length;
         this.subs.push(sub);
-    },
+    }
     /**
      * Parse the given .rt file format and subtract all subtitles and their durations.
-     * @method Subtity#parseRT
      * @param {string} text the file content
      * @param {string} title the subtitle special name to identify and use later
      * @param {string} movie the movie to display subtitles to
      */
-    parseRT: function (text, title, movie) {
-        var data = text.split('<br/>'), section = [],
+    parseRT(text, title, movie) {
+        let data = text.split('<br/>'), section = [],
             sub = {
                 movie: movie,
                 title: title,
@@ -621,16 +607,15 @@ Subtity.prototype = {
 
         sub.count = sub.subtitles.length;
         this.subs.push(sub);
-    },
+    }
     /**
      * Parse the given .itt file format and subtract all subtitles and their durations.
-     * @method Subtity#parseITT
      * @param {string} text the file content
      * @param {string} title the subtitle special name to identify and use later
      * @param {string} movie the movie to display subtitles to
      */
-    parseITT: function (text, title, movie) {
-        var data = text.split('<body>')[1].split('</body>')[0].split('<p '), timeRang = null,
+    parseITT(text, title, movie) {
+        let data = text.split('<body>')[1].split('</body>')[0].split('<p '), timeRang = null,
             sub = {
                 movie: movie,
                 title: title,
@@ -659,7 +644,7 @@ Subtity.prototype = {
             // so it no more bother us
             sect.shift();
 
-            var subtitle = '';
+            let subtitle = '';
             // this step needs to loop through the string to take rid of the span element inside
             // of it and only absord the subtitle pure text
             for (let j = 0; j < sect.length; j++) {
@@ -684,16 +669,15 @@ Subtity.prototype = {
 
         sub.count = sub.subtitles.length;
         this.subs.push(sub);
-    },
+    }
     /**
      * Parse the given .usf file format and subtract all subtitles and their durations.
-     * @method Subtity#parseUSF
      * @param {string} text the file content
      * @param {string} title the subtitle special name to identify and use later
      * @param {string} movie the movie to display subtitles to
      */
-    parseUSF: function (text, title, movie) {
-        var meta = text.split('<metadata>')[1].split('</metadata>')[0],
+    parseUSF(text, title, movie) {
+        let meta = text.split('<metadata>')[1].split('</metadata>')[0],
             data = text.split('<subtitles>')[1].split('</subtitles>')[0].split('<subtitle '),
             sub = {
                 movie: movie,
@@ -715,7 +699,7 @@ Subtity.prototype = {
             sub.meta.date = meta.split('<date>')[1].split('</date>')[0];
         }
         if (meta.indexOf('<author>') !== -1) {
-            var authorData = meta.split('<author>')[1].split('</author>')[0];
+            let authorData = meta.split('<author>')[1].split('</author>')[0];
             if (authorData.indexOf('<name>') !== -1) {
                 sub.meta.authorName = authorData.split('<name>')[1].split('</name>')[0];
             }
@@ -729,7 +713,7 @@ Subtity.prototype = {
         if (meta.indexOf('<language') !== -1) {
             sub.meta.language = "";
             t = meta.split('<language ')[1].split('</language>')[0];
-            sub.meta.language = t.substr(t.indexOf('>') + 1, t.length);
+            sub.meta.language = t.substring(t.indexOf('>') + 1, t.length);
         }
 
         for (let i = 0; i < data.length; i++) {
@@ -737,8 +721,8 @@ Subtity.prototype = {
 
             const line = data[i];
             const timeRang = data[i].split('>')[0].split('"');
-            var begin = this.convertToTime(timeRang[1]);
-            var end = this.convertToTime(timeRang[3]);
+            let begin = this.convertToTime(timeRang[1]);
+            let end = this.convertToTime(timeRang[3]);
 
 
             // choosing the right splitter
@@ -774,7 +758,7 @@ Subtity.prototype = {
             }
 
             // make sure there is no other subtitle that collides with this one.
-            var alr = sub.ranges.findIndex(a => begin >= a[0] && begin <= a[1]);
+            let alr = sub.ranges.findIndex(a => begin >= a[0] && begin <= a[1]);
             if (alr !== -1) {
                 sub.subtitles[alr] = sub.subtitles[alr].concat(fline.split('\n'));
             }
@@ -786,16 +770,15 @@ Subtity.prototype = {
 
         sub.count = sub.subtitles.length;
         this.subs.push(sub);
-    },
+    }
     /**
      * Parse the given .subti file format and subtract all subtitles and their durations.
-     * @method Subtity#parseSUBTI
      * @param {string} text the file content
      * @param {string} title the subtitle special name to identify and use later
      * @param {string} movie the movie to display subtitles to
      */
-    parseSUBTI: function (text, title, movie) {
-        var data = text.split('=='),
+    parseSUBTI(text, title, movie) {
+        let data = text.split('=='),
             sub = {
                 movie: movie,
                 title: title,
@@ -809,7 +792,7 @@ Subtity.prototype = {
 
         // now data contains at the first section the meta data
         // so let's subtract it
-        var meta = data[0].split('\n');
+        let meta = data[0].split('\n');
         meta.pop();
         for (let j = 0; j < meta.length; j++) {
             const element = meta[j].split('=');
@@ -837,16 +820,15 @@ Subtity.prototype = {
 
         sub.count = sub.subtitles.length;
         this.subs.push(sub);
-    },
+    }
     /**
      * Parse the given .lrc file format and subtract all lyric and their durations.
-     * @method Subtity#parseLRC
      * @param {string} text the file content
      * @param {string} title the subtitle special name to identify and use later
      * @param {string} movie the movie to display subtitles to
      */
-    parseLRC: function (text, title, movie) {
-        var data = text.split('\n'),
+    parseLRC(text, title, movie) {
+        let data = text.split('\n'),
             sub = {
                 movie: movie,
                 title: title,
@@ -864,20 +846,19 @@ Subtity.prototype = {
         for (let i = 0; i < data.length; i++) {
             if (data[i].length === 1 || data[i].length === 0) continue;
             const line = data[i].split('[')[1].split(']');
-            var descrip = line[0];
-            var body = line[1];
+            let descrip = line[0];
+            let body = line[1];
 
             if (nums.indexOf(descrip[0]) === -1) {
                 // basically this is means this is a meta data about the file
-                subj = descrip.substr(0, descrip.indexOf(':'));
-                elm = descrip.substr(descrip.indexOf(':') + 1, descrip.length);
+                subj = descrip.substring(0, descrip.indexOf(':'));
+                elm = descrip.substring(descrip.indexOf(':') + 1, descrip.length);
                 if (subj === 'au') subj = 'author';
                 if (subj === 'ar') subj = 'artist';
                 if (subj === 'al') subj = 'album';
                 if (subj === 'ti') subj = 'title';
                 sub.meta[subj] = elm;
-            }
-            else {
+            } else {
                 // means this is a lyric line
                 rang = this.convertToTime(descrip);
                 k = sub.ranges.push([rang]);
@@ -892,36 +873,36 @@ Subtity.prototype = {
 
         sub.count = sub.subtitles.length;
         this.subs.push(sub);
-    },
+    }
     /**
      * Convert a given time in seconds to a proper format to be used in a subtitle file in this way `hh:mm:ss.xx` seperated
-     * by the given seperator.
-     * @method Subtity#convertToText
+     * by the given separator.
      * @param {number} time 
-     * @param {string} seperator default is `:`
+     * @param {string} separator default is `:`
      * @param {string} fractionSymbol default is `.`
      * @returns {string}
      */
-    convertToText: function (time, seperator = ':', fractionSymbol = '.') {
-        var hours = Math.floor(time / 3600);
+    convertToText(time, separator, fractionSymbol) {
+        separator = separator || ":";
+        fractionSymbol = fractionSymbol || ".";
+        let hours = Math.floor(time / 3600);
         time = time - (hours * 3600);
-        var minutes = Math.floor(time / 60);
+        let minutes = Math.floor(time / 60);
         time = time - (minutes * 60);
-        var seconds = time.toFixed(2);
+        let seconds = time.toFixed(2);
         seconds = seconds.replace('.', fractionSymbol);
 
-        return hours + seperator + minutes + seperator + seconds;
-    },
+        return hours + separator + minutes + separator + seconds;
+    }
     /**
      * Convert the string in time notation `hh:mm:ss` or `hh:mm:ss.xx` to real number represent time 
      * in seconds. used internally by the library!
-     * @method Subtity#convertToTime
      * @param {string} time 
      * @returns {number}
      */
-    convertToTime: function (time) {
-        var dur = 0, hours, minutes, seconds;
-        var org = time.split(':');
+    convertToTime(time) {
+        let dur = 0, hours, minutes, seconds;
+        let org = time.split(':');
 
 
         // now parse the hours minutes and seconds
@@ -951,16 +932,15 @@ Subtity.prototype = {
         dur += (hours * 3600) + (minutes * 60) + seconds;
 
         return dur
-    },
+    }
     /**
      * Used internally by the class to parse a rang representation string into seconds count,
      * for `srt` , `subti` , `sbv` and `webvtt` file formats.
-     * @method Subtity#getSeconds
      * @param {string} repRang stands for representation rang
      * @returns {Array}
      */
-    getSeconds: function (repRang) {
-        var rang = [0, 0];
+    getSeconds(repRang) {
+        let rang = [0, 0];
         // first we seperate the rang, usually it's the form beginTime-->endTime in srt and webvtt
         // files and beginTime,endTime in sbv files and beginTime=>endTime in subti files
         // so we need to check the existance of the arrow, if not then we seperate with `,`
@@ -971,21 +951,18 @@ Subtity.prototype = {
         rang[1] = this.convertToTime(repRang[1]);
 
         return rang;
-    },
+    }
     /**
      * Must be called as the video time updated or the loop updated, to render or display the subtitles.
-     * @method Subtity#update
      */
-    update: function () {
-        if (this.mode === null) {
-            console.warn('Must set up the parser rendering mode first!\`Subtity.setUp2D or Subtity.setUpContainer\`');
-            return;
-        }
+    update() {
+        if (this.mode === null)
+            return console.warn('Must set up the parser rendering mode first!\`Subtity.setUp2D or Subtity.setUpContainer\`');
 
         if (this.ranges.length === 0 || this.subtitles.length === 0 || this.activated === false) return;
 
-        current = this.video.currentTime * this.speedFactor;
-        mov = this.video.src;
+        let current = this.video.currentTime * this.speedFactor;
+        this.video.src;
 
         for (let i = 0; i < this.ranges.length; i++) {
             const rang = this.ranges[i];
@@ -1000,32 +977,32 @@ Subtity.prototype = {
                 }
                 else {
                     // for rendering mode we should get the options
-                    family = this.style.family || 'Arial';
-                    style = this.style.style || 'normal';
-                    variant = this.style.variant || 'normal';
-                    base = this.style.base || 90;
-                    left = this.style.left || 50;
-                    size = this.style.size || 25;
-                    align = this.style.align || 'center';
-                    color = this.style.color || 'white';
-                    bg = this.style.bg || 'rgba(0,0,0,0)';
-                    direction = this.style.direction || 'ltr';
-                    opacity = this.style.opacity || 1;
-                    weight = this.style.weight || 'bold';
-                    marginL = this.style.marginLeft;
-                    marginT = this.style.marginTop;
-                    outlineColor = this.style.outlineColor || 'black';
-                    outlineSize = this.style.outlineSize || 1;
-                    shadowColor = this.style.shadowColor || 'rgba(0,0,0,0)';
-                    shadowX = this.style.shadowX || 0;
-                    shadowY = this.style.shadowY || 0;
-                    shadowBlur = this.style.shadowBlur || 0;
-                    lineSpacing = this.style.lineSpacing || 0;
-                    lineHeight = this.style.lineHeight;
+                    let family = this.style.family || 'Arial';
+                    let style = this.style.style || 'normal';
+                    let variant = this.style.variant || 'normal';
+                    let base = this.style.base || 90;
+                    let left = this.style.left || 50;
+                    let size = this.style.size || 25;
+                    let align = this.style.align || 'center';
+                    let color = this.style.color || 'white';
+                    this.style.bg || 'rgba(0,0,0,0)';
+                    let direction = this.style.direction || 'ltr';
+                    let opacity = this.style.opacity || 1;
+                    let weight = this.style.weight || 'bold';
+                    this.style.marginLeft;
+                    this.style.marginTop;
+                    let outlineColor = this.style.outlineColor || 'black';
+                    let outlineSize = this.style.outlineSize || 1;
+                    let shadowColor = this.style.shadowColor || 'rgba(0,0,0,0)';
+                    let shadowX = this.style.shadowX || 0;
+                    let shadowY = this.style.shadowY || 0;
+                    let shadowBlur = this.style.shadowBlur || 0;
+                    let lineSpacing = this.style.lineSpacing || 0;
+                    let lineHeight = this.style.lineHeight;
 
                     this.renderer.beginPath();
-                    x = (this.renderer.canvas.width / 100) * left;
-                    y = (this.renderer.canvas.height / 100) * base;
+                    let x = (this.renderer.canvas.width / 100) * left;
+                    let y = (this.renderer.canvas.height / 100) * base;
 
                     this.renderer.fillStyle = color;
                     this.renderer.textAlign = align;
@@ -1055,55 +1032,50 @@ Subtity.prototype = {
                 }
             }
         }
-    },
+    }
     /**
      * Set up the parser to render the text to a 2D CanvasRendering context, passing the HTMLCanvasElement
      * to render on, and optional options list of styles to be applied to the text while rendering.
-     * @method Subtity#setUp2D
      * @param {HTMLCanvasElement} canvas the canvas element or it context
      * @param {HTMLVideoElement} video 
      */
-    setUp2D: function (canvas, video) {
+    setUp2D(canvas, video) {
 
         this.renderer = canvas instanceof CanvasRenderingContext2D ? canvas : canvas.getContext('2d');
         this.mode = 2;
         this.video = video;
-    },
+    }
     /**
      * Set up the parser to use an HTMLElement to display the subtitles, passing the HTMLElement!
-     * @method Subtity#setUpContainer
      * @param {HTMLElement} elm 
      * @param {HTMLVideoElement} video 
      */
-    setUpContainer: function (elm, video) {
+    setUpContainer(elm, video) {
         this.container = elm;
         this.mode = 1;
         this.video = video;
-    },
+    }
     /**
      * Set the offset value, pass positive number to progress or negative to delay the subtitle displaying process.
-     * @method Subtity#setOffset
      * @param {number} offset 
      */
-    setOffset: function (offset) {
+    setOffset(offset) {
         this.offset = typeof offset === 'number' && !isNaN(offset) ? offset : this.offset;
-    },
+    }
     /**
      * Change the subtitle rendering speed
-     * @method Subtity#setSpeed
      * @param {number} speed 
      */
-    setSpeed: function (speed) {
+    setSpeed(speed) {
         this.speedFactor = typeof speed === 'number' && !isNaN(speed) ? speed : this.speedFactor;
-    },
+    }
     /**
      * Customize the subtitles style when displaying, this is only applied when rendering
      * to a 2D context, not when using normal DOM element.
-     * @method Subtity#set
      * @param {string} style 
      * @param {any} value 
      */
-    set: function (style, value) {
+    set(style, value) {
 
         switch (style) {
             case 'family':
@@ -1166,18 +1138,17 @@ Subtity.prototype = {
                 this.style.opacity = isNaN(parseFloat(value)) ? 1 : parseFloat(value);
 
         }
-    },
+    }
     /**
      * Used internally by the engine to calculate the font height currently under use
-     * @method Subtity#calcFontHeight
      * @returns {number}
      */
-    calcFontHeight: function () {
-        fontSize = parseFloat(this.style.size);
-        fontFamily = this.style.family;
+    calcFontHeight() {
+        let fontSize = parseFloat(this.style.size);
+        let fontFamily = this.style.family;
 
-        var modal = 'gM';
-        var context = this.ctx;
+        let modal = 'gM';
+        let context = this.ctx;
         context.canvas.width = context.canvas.width;
 
         context.fillRect(0, 0, context.canvas.width, context.canvas.height);
@@ -1188,14 +1159,14 @@ Subtity.prototype = {
 
         context.fillText(modal, 0, 0);
 
-        var data = context.getImageData(0, 0, context.canvas.width, context.canvas.height).data;
+        let data = context.getImageData(0, 0, context.canvas.width, context.canvas.height).data;
 
-        var start = -1;
-        var end = -1;
-        for (var i = 0; i < context.canvas.height; i++) {
+        let start = -1;
+        let end = -1;
+        for (let i = 0; i < context.canvas.height; i++) {
 
-            for (var j = 0; j < context.canvas.width; j++) {
-                var index = (i * context.canvas.width + j) * 4;
+            for (let j = 0; j < context.canvas.width; j++) {
+                let index = (i * context.canvas.width + j) * 4;
 
                 if (data[index] === 0) {
                     if (j === context.canvas.width - 1 && start !== -1) {
@@ -1215,12 +1186,11 @@ Subtity.prototype = {
         }
 
         this.style.lineHeight = end - start;
-    },
+    }
     /**
      * Loads the default style applied to the rendering process
-     * @method Subtity#loadDefaultStyle
      */
-    loadDefaultStyle: function () {
+    loadDefaultStyle() {
         this.style = {
             family: 'Arial',
             size: 19,
@@ -1241,14 +1211,13 @@ Subtity.prototype = {
             style: 'normal',
             variant: 'normal'
         };
-    },
+    }
     /**
      * Toggle the activation of the subtitle
-     * @method Subtity#toggleActivation
      * @param {boolean} state the state to force applying `false` to disactivate or `true` to activate.
      * @returns {boolean} the new activation state
      */
-    toggleActivation: function (state) {
+    toggleActivation(state) {
         if (typeof state === 'boolean') {
             this.activated = state;
         }
@@ -1256,15 +1225,14 @@ Subtity.prototype = {
             this.activated = !this.activated;
         }
         return this.activated;
-    },
+    }
     /**
      * Remove a subtitle from the list
-     * @method Subtity#remove
      * @param {string} title 
      * @returns {object} the removed subtitle or false if it was not found
      */
-    remove: function (title) {
-        var i = this.subs.findIndex(a => a.title === title);
+    remove(title) {
+        let i = this.subs.findIndex(a => a.title === title);
 
         if (i !== -1) {
             if (this.subs[i].used === true) {
@@ -1273,19 +1241,18 @@ Subtity.prototype = {
             return this.subs.splice(i, 1);
         }
         return false
-    },
+    }
     /**
      * Add a new subtitle to the list
-     * @method Subtity#add
      * @param {string} title the subtitle special title to use it later
      * @param {string} text the subtitle file text content
      * @param {string} ext the extension of the subtitle
      * @param {string} movie the name of the movie this subtitle going to be used with
      */
-    add: function (title, text, ext, movie) {
+    add(title, text, ext, movie) {
         if (typeof ext !== 'string' || typeof text !== 'string' || title === '') return;
 
-        var res = this.check(title);
+        let res = this.check(title);
         if (res === false) {
             return;
         }
@@ -1324,18 +1291,17 @@ Subtity.prototype = {
         else if (ext === '.xml' || ext === 'xml') {
             this.parseXML(text, title, movie);
         }
-    },
+    }
     /**
      * Export the current system stored subtitles into a file text in certain type
-     * @method Subtity#export
      * @param {string} fileFormat 
      * @returns {string} the text content or `false` if cannot export to the given type/fileFormat
      */
-    export: function (fileFormat) {
+    export(fileFormat) {
         if (typeof fileFormat !== 'string') return;
 
         fileFormat = fileFormat.toLowerCase();
-        var text = false;
+        let text = false;
 
         if (fileFormat === '.srt' || fileFormat === 'srt') {
             text = this.exportToSRT();
@@ -1357,32 +1323,30 @@ Subtity.prototype = {
         }
 
         return text
-    },
+    }
     /**
      * Check whether a title is under use or not, then warn to console if it's is
-     * @method Subtity#check
      * @param {string} title
      * @returns {boolean}
      */
-    check: function (title) {
-        var index = this.subs.findIndex(a => a.title === title);
+    check(title) {
+        let index = this.subs.findIndex(a => a.title === title);
         if (index !== -1) {
             console.warn('The given title( ' + title + ') is already under use, please use a new one');
             return false;
         }
         return true;
-    },
+    }
     /**
      * Export the current system content of subtitles and ranges to an .srt file formats text
-     * @method Subtity#exportToSRT
      * @returns {string}
      */
-    exportToSRT: function () {
-        var text = '';
+    exportToSRT() {
+        let text = '';
         for (let i = 0; i < this.subtitles.length; i++) {
             const sub = this.subtitles[i];
             const rang = this.ranges[i];
-            var sect = (i + 1) + '\n';
+            let sect = (i + 1) + '\n';
             sect += this.convertToText(rang[0], ':', ',') + ' --> ' + this.convertToText(rang[1], ':', ',') + '\n';
 
             sect += sub.join('\n');
@@ -1391,19 +1355,18 @@ Subtity.prototype = {
         }
 
         return text;
-    },
+    }
     /**
      * Export the current system content of subtitles and ranges to an .webvtt file formats text
-     * @method Subtity#exportToWEBVTT
      * @returns {string}
      */
-    exportToWEBVTT: function () {
-        var text = 'WEBVTT\n';
+    exportToWEBVTT() {
+        let text = 'WEBVTT\n';
 
         for (let i = 0; i < this.subtitles.length; i++) {
             const sub = this.subtitles[i];
             const rang = this.ranges[i];
-            var sect = (i + 1) + '\n';
+            let sect = (i + 1) + '\n';
             sect += this.convertToText(rang[0]) + ' --> ' + this.convertToText(rang[1]) + '\n';
 
             sect += sub.join('\n');
@@ -1412,14 +1375,13 @@ Subtity.prototype = {
         }
 
         return text;
-    },
+    }
     /**
      * Export the current system content of subtitles and ranges to an .subti file formats text
-     * @method Subtity#exportToSUBTI
      * @returns {string}
      */
-    exportToSUBTI: function () {
-        var text = '';
+    exportToSUBTI() {
+        let text = '';
 
         // inserting the meta data first
         for (const key in this.meta) {
@@ -1430,7 +1392,7 @@ Subtity.prototype = {
             }
         }
         text += '==';
-        var names = this.meta.names !== undefined ? this.meta.names : [];
+        let names = this.meta.names !== undefined ? this.meta.names : [];
 
         // now inserting the subtitles
         for (let i = 0; i < this.subtitles.length; i++) {
@@ -1438,7 +1400,7 @@ Subtity.prototype = {
             const rang = this.ranges[i];
             const name = names[i] !== undefined ? names[i] : '';
 
-            var sect = name + '\n';
+            let sect = name + '\n';
             sect += this.convertToText(rang[0]) + '=>' + this.convertToText(rang[1]) + '\n';
 
             sect += subtitle.join('\n');
@@ -1447,14 +1409,13 @@ Subtity.prototype = {
         }
 
         return text
-    },
+    }
     /**
      * Export the current system content of subtitles and ranges to an .lrc file formats text
-     * @method Subtity#exportToLRC
      * @returns {string}
      */
-    exportToLRC: function () {
-        var text = '';
+    exportToLRC() {
+        let text = '';
         // first packaging the meta data
         for (const key in this.meta) {
             if (this.meta.hasOwnProperty(key)) {
@@ -1471,13 +1432,12 @@ Subtity.prototype = {
         }
 
         return text;
-    },
+    }
     /**
      * Export the current system content of subtitles and ranges to an .ssa file formats text
-     * @method Subtity#exportToSSA
      * @returns {string}
      */
-    exportToSSA: function () {
+    exportToSSA() {
         text = '[Script Info]\n';
         // packaging the meta data
         for (const key in this.meta) {
@@ -1492,7 +1452,7 @@ Subtity.prototype = {
         text += '[Events]\n';
         // declaring the format
         text += 'Format: Start, End, Name, Text\n';
-        var names = this.meta.names !== undefined ? this.meta.names : [];
+        let names = this.meta.names !== undefined ? this.meta.names : [];
 
         for (let i = 0; i < this.subtitles.length; i++) {
             const sub = this.subtitles[i];
@@ -1504,21 +1464,20 @@ Subtity.prototype = {
         }
 
         return text
-    },
+    }
     /**
      * Change the current subtitle language if subtitle file provided with multi languages, this is only supported with certain
      * file formats like `.dfxp`.
-     * @method Subtity#switchToLang
      * @param {string} lang the first two letter of the language for example for `english` you pass `en` and so on... 
      */
-    switchToLang: function (lang) {
+    switchToLang(lang) {
         if (this.meta.langs !== undefined) {
             if (this.meta.langs.hasOwnProperty(lang)) {
                 this.subtitles = this.meta.langs[lang];
             }
         }
     }
-};
+}
 
 export { Subtity as default };
 //# sourceMappingURL=subtity.esm.js.map
